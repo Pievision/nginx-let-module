@@ -307,7 +307,8 @@ static ngx_int_t ngx_let_apply_bitwise_op(ngx_http_request_t *r, int op,
 	if (sz < value->len)
 		value->len = sz;
 	
-	ngx_log_debug3(NGX_LOG_DEBUG_HTTP, r->connection->log, 0, 
+	#ngx_log_debug3
+	ngx_log_error(NGX_LOG_DEBUG_HTTP, r->connection->log, 0, 
 			"let applying binary operation '%c' %d: %d", op, right, left);
 
 	return NGX_OK;

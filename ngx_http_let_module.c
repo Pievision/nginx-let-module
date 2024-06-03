@@ -261,6 +261,58 @@ static ngx_int_t ngx_let_call_fun(ngx_http_request_t *r,
 	return NGX_ERROR;
 }
 
+static ngx_int_t ngx_let_apply_bitwise_op(ngx_http_request_t *r, int op, 
+		ngx_array_t* args, ngx_str_t* value)
+{
+	ngx_str_t* str;
+	int left, right, res;
+	unsigned sz;
+	if (args->nelts != 2) {
+		ngx_log_error(NGX_LOG_ALERT, r->connection->log, 0, 
+				"let not enough argument for bitwise operation");
+		return NGX_ERROR;
+	}
+	
+	str = args->elts;
+	
+	left = ngx_let_toi(str);
+	if (left != NGX_ERROR) {
+		++str;
+		right = ngx_let_toi(str);
+	}
+	
+	if (left == NGX_ERROR || right == NGX_ERROR) {
+		ngx_log_error(NGX_LOG_ALERT, r->connection->log, 0, 
+				"let error parsing argument '%*s'", str->len, str->data);
+		return NGX_ERROR;
+	}
+		switch(op) {
+		case '<':
+			res = left << right;
+			break;			
+		case '>':
+			res = left >> right;
+			break;
+		default:
+			ngx_log_error(NGX_LOG_ALERT, r->connection->log, 0, 
+					"let unexpected operation '%c'", op);
+			return NGX_ERROR;
+	}
+	
+	value->len = 64; /*TODO: better size? */
+	value->data = ngx_palloc(r->pool, value->len);
+	
+	sz = snprintf((char*)value->data, value->len, "%d", res);
+
+	if (sz < value->len)
+		value->len = sz;
+	
+	ngx_log_debug3(NGX_LOG_DEBUG_HTTP, r->connection->log, 0, 
+			"let applying binary operation '%c' %d: %d", op, right, left);
+
+	return NGX_OK;
+}
+
 /* Processes positive integers only */
 static ngx_int_t ngx_let_apply_binary_integer_op(ngx_http_request_t *r, int op, 
 		ngx_array_t* args, ngx_str_t* value)
@@ -456,7 +508,11 @@ static ngx_int_t ngx_let_get_node_value(ngx_http_request_t* r, ngx_let_node_t* n
 				ret = ngx_let_apply_binary_integer_op(r, node->index, &args, value);
 				if (ret != NGX_OK)
 					return ret;
-				
+			} else if (strchr("<", node->index)) {
+				/* bitwise operation */
+				ret = (left << right)
+				if (ret != NGX_OK)
+					return ret;
 			} else if (node->index == '.') {
 				
 				/* string concatenation */

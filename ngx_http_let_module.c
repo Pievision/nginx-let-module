@@ -268,7 +268,7 @@ static ngx_int_t ngx_let_apply_bitwise_op(ngx_http_request_t *r, int op,
 	int left, right, res;
 	unsigned sz;
 	if (args->nelts != 2) {
-		ngx_log_error(NGX_LOG_ALERT, r->connection->log, 0, 
+		ngx_log_error(NGX_LOG_ERR, r->connection->log, 0, 
 				"let not enough argument for bitwise operation");
 		return NGX_ERROR;
 	}
@@ -282,8 +282,8 @@ static ngx_int_t ngx_let_apply_bitwise_op(ngx_http_request_t *r, int op,
 	}
 	
 	if (left == NGX_ERROR || right == NGX_ERROR) {
-		ngx_log_error(NGX_LOG_ALERT, r->connection->log, 0, 
-				"let error parsing argument '%*s'", str->len, str->data);
+		ngx_log_error(NGX_LOG_ERR, r->connection->log, 0, 
+				"let error parsing argument %i,", str->len, str->data);
 		return NGX_ERROR;
 	}
 		switch(op) {
@@ -308,7 +308,7 @@ static ngx_int_t ngx_let_apply_bitwise_op(ngx_http_request_t *r, int op,
 		value->len = sz;
 	
 	#ngx_log_debug3
-	ngx_log_error(NGX_LOG_DEBUG_HTTP, r->connection->log, 0, 
+	ngx_log_error(NGX_LOG_ALERT, r->connection->log, 0, 
 			"let applying binary operation '%c' %d: %d", op, right, left);
 
 	return NGX_OK;
@@ -509,12 +509,14 @@ static ngx_int_t ngx_let_get_node_value(ngx_http_request_t* r, ngx_let_node_t* n
 				ret = ngx_let_apply_binary_integer_op(r, node->index, &args, value);
 				if (ret != NGX_OK)
 					return ret;
-			} else if (strchr("<>", node->index)) {
+			} 
+			else if (strchr("<>", node->index)) {
 				/* bitwise operation */
 				ret = ngx_let_apply_bitwise_op(r, node->index, &args, value);
 				if (ret != NGX_OK)
 					return ret;
-			} else if (node->index == '.') {
+			} 
+			else if (node->index == '.') {
 				
 				/* string concatenation */
 

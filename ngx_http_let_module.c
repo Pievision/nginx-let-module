@@ -508,7 +508,7 @@ static ngx_int_t ngx_let_get_node_value(ngx_http_request_t* r, ngx_let_node_t* n
 				ret = ngx_let_apply_binary_integer_op(r, node->index, &args, value);
 				if (ret != NGX_OK)
 					return ret;
-			} else if (strchr("<", node->index)) {
+			} else if (strchr("<>", node->index)) {
 				/* bitwise operation */
 				ret = (left << right)
 				if (ret != NGX_OK)

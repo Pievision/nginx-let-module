@@ -510,7 +510,7 @@ static ngx_int_t ngx_let_get_node_value(ngx_http_request_t* r, ngx_let_node_t* n
 					return ret;
 			} else if (strchr("<>", node->index)) {
 				/* bitwise operation */
-				ret = (left << right)
+				ret = ngx_let_apply_bitwise_op(r, node->index, &args, value);
 				if (ret != NGX_OK)
 					return ret;
 			} else if (node->index == '.') {
